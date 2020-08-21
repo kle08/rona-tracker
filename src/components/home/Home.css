@@ -1,0 +1,12 @@
+.home__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: 'center';
+  flex-direction: row-reverse;
+}
+
+.home__stats {
+  display: flex;
+  justify-content: space-between;
+
+}

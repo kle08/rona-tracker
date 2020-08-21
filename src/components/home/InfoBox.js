@@ -1,6 +1,5 @@
 import React from 'react'
 import { Card, CardContent, Typography } from '@material-ui/core';
-import { typography } from '@material-ui/system';
 
 export default function InfoBox({ title, cases, total }) {
   return (

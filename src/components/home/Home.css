@@ -1,12 +1,27 @@
+.home {
+  display: flex;
+  justify-content: space-evenly;
+  padding: 20px;
+}
+
 .home__header {
   display: flex;
   justify-content: space-between;
   align-items: 'center';
+  margin-bottom: 20px;
   flex-direction: row-reverse;
 }
 
 .home__stats {
   display: flex;
   justify-content: space-between;
+}
+.home__left {
+  flex: 0.9;
+}
 
+@media (max-width: 990px) {
+  .home {
+    flex-direction: column
+  }
 }

@@ -38,7 +38,7 @@
 }
 
 .table tr:nth-of-type(odd) {
-  background-color: antiquewhite;
+  background-color: rgb(88, 76, 59);
 }
 
 @media (max-width: 990px) {

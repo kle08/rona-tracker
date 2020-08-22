@@ -1,97 +1,130 @@
 import React, { useState, useEffect } from 'react';
-import { MenuItem, FormControl, Select, Card, CardContent, } from '@material-ui/core';
-import './Home.css';
+import {
+  MenuItem,
+  FormControl,
+  Select,
+  Card,
+  CardContent,
+} from '@material-ui/core';
 import InfoBox from './InfoBox';
-import Map from './Map';
-import Table from './Table';
-import { sortData } from './util'
 import LineGraph from './LineGraph';
-import "leaflet/dist/leaflet.css";
+import Table from './Table';
+import { sortData, prettyPrintStat } from './util';
+import numeral from 'numeral';
+import Map from './Map';
+import 'leaflet/dist/leaflet.css';
+import './Home.css';
 
 export default function Home() {
-  const [countries, setCountries] = useState([]);
-  const [country, setCountry] = useState('worldwide');
+  const [country, setInputCountry] = useState('worldwide');
   const [countryInfo, setCountryInfo] = useState({});
-  const [tableData, setTableData] = useState([])
-  const [mapCenter, setMapCenter] = useState({ lat: 34.80746, lng: -40.4796 })
+  const [countries, setCountries] = useState([]);
+  const [mapCountries, setMapCountries] = useState([]);
+  const [tableData, setTableData] = useState([]);
+  const [casesType, setCasesType] = useState('cases');
+  const [mapCenter, setMapCenter] = useState({ lat: 34.80746, lng: -40.4796 });
   const [mapZoom, setMapZoom] = useState(3);
-  const [mapCountries, setMapCountries] = useState([])
-
 
   useEffect(() => {
     fetch('https://disease.sh/v3/covid-19/all')
-      .then(response => response.json())
-      .then(data => setCountryInfo(data))
-  }, [])
+      .then((response) => response.json())
+      .then((data) => {
+        setCountryInfo(data);
+      });
+  }, []);
 
   useEffect(() => {
     const getCountriesData = async () => {
-      await fetch("https://disease.sh/v3/covid-19/countries")
+      fetch('https://disease.sh/v3/covid-19/countries')
         .then((response) => response.json())
         .then((data) => {
-          const countries = data.map(country => ({
-            id: country.countryInfo.id,
+          const countries = data.map((country) => ({
             name: country.country,
-            value: country.countryInfo.iso2
-          }))
-          const sortedData = sortData(data);
-          setTableData(sortedData);
+            value: country.countryInfo.iso2,
+          }));
+          let sortedData = sortData(data);
           setCountries(countries);
           setMapCountries(data);
-        })
-    }
-    getCountriesData()
+          setTableData(sortedData);
+        });
+    };
+
+    getCountriesData();
   }, []);
+
+  console.log(casesType);
 
   const onCountryChange = async (e) => {
     const countryCode = e.target.value;
-    setCountry(countryCode)
-    const url = countryCode === 'worldwid' ?
-      'https://disease.sh/v3/covid-19/all' :
-      `https://disease.sh/v3/covid-19/countries/${countryCode}`
+
+    const url =
+      countryCode === 'worldwide'
+        ? 'https://disease.sh/v3/covid-19/all'
+        : `https://disease.sh/v3/covid-19/countries/${countryCode}`;
     await fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        setCountryInfo(data)
-        setCountry(countryCode)
-        setMapCenter([data.countryInfo.lat, data.countryInfo.long])
-        setMapZoom(4)
-      })
-  }
+      .then((response) => response.json())
+      .then((data) => {
+        setInputCountry(countryCode);
+        setCountryInfo(data);
+        setMapCenter([data.countryInfo.lat, data.countryInfo.long]);
+        setMapZoom(4);
+      });
+  };
 
   return (
     <div className='home'>
       <div className='home__left'>
         <div className='home__header'>
-          <FormControl className='home__dropdown' >
+          <FormControl className='home__dropdown'>
             <Select
               variant='outlined'
-              onChange={onCountryChange}
-              value={country}>
+              value={country}
+              onChange={onCountryChange}>
               <MenuItem value='worldwide'>Worldwide</MenuItem>
-              {countries.map(country => {
-                return <MenuItem value={country.value}>{country.name}</MenuItem>
-              })}
+              {countries.map((country) => (
+                <MenuItem value={country.value}>{country.name}</MenuItem>
+              ))}
             </Select>
           </FormControl>
         </div>
         <div className='home__stats'>
-          <InfoBox title='Coronavirus Cases' cases={countryInfo.todayCases} total={countryInfo.cases} />
-          <InfoBox title='Recovered' cases={countryInfo.todayRecovered} total={countryInfo.recovered} />
-          <InfoBox title='Deaths' cases={countryInfo.todayDeaths} total={countryInfo.deaths} />
+          <InfoBox
+            onClick={(e) => setCasesType('cases')}
+            title='Coronavirus Cases'
+            isRed
+            active={casesType === 'cases'}
+            cases={prettyPrintStat(countryInfo.todayCases)}
+            total={numeral(countryInfo.cases).format('0.0a')} />
+          <InfoBox
+            onClick={(e) => setCasesType('recovered')}
+            title='Recovered'
+            active={casesType === 'recovered'}
+            cases={prettyPrintStat(countryInfo.todayRecovered)}
+            total={numeral(countryInfo.recovered).format('0.0a')} />
+          <InfoBox
+            onClick={(e) => setCasesType('deaths')}
+            title='Deaths'
+            isRed
+            active={casesType === 'deaths'}
+            cases={prettyPrintStat(countryInfo.todayDeaths)}
+            total={numeral(countryInfo.deaths).format('0.0a')} />
         </div>
-        <Map center={mapCenter}
-          zoom={mapZoom}
-          countries={mapCountries} />
+        <Map
+          countries={mapCountries}
+          casesType={casesType}
+          center={mapCenter}
+          zoom={mapZoom} />
       </div>
       <Card className='home__right'>
         <CardContent>
-          <h3>live cases </h3>
-          <Table countries={tableData} />
-          <h3>live new cases </h3>
+          <div className='home__information'>
+            <h3>Live Cases by Country</h3>
+            <Table countries={tableData} />
+            <h3>Worldwide {casesType}</h3>
+            <LineGraph casesType={casesType} />
+          </div>
         </CardContent>
-        <LineGraph />
       </Card>
     </div>
-  )
-}
+  );
+};

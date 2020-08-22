@@ -16,8 +16,29 @@
   display: flex;
   justify-content: space-between;
 }
+
 .home__left {
   flex: 0.9;
+}
+
+.table {
+  margin-top: 20px;
+  overflow: scroll;
+  height: 400px;
+  color: rgb(186, 151, 151)
+}
+
+.table tr {
+  display: flex;
+  justify-content: space-between;
+}
+
+.table td {
+  padding: 0.5rem;
+}
+
+.table tr:nth-of-type(odd) {
+  background-color: antiquewhite;
 }
 
 @media (max-width: 990px) {

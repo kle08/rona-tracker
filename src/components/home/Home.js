@@ -48,11 +48,8 @@ export default function Home() {
           setTableData(sortedData);
         });
     };
-
     getCountriesData();
   }, []);
-
-  console.log(casesType);
 
   const onCountryChange = async (e) => {
     const countryCode = e.target.value;
